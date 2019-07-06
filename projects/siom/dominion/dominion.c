@@ -865,55 +865,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 		
     case minion:
-      //+1 action
-      state->numActions++;
-			
-      //discard card from hand
-      discardCard(handPos, currentPlayer, state, 0);
-			
-      if (choice1)		//+2 coins
-	{
-	  state->coins = state->coins + 2;
-	}
-			
-      else if (choice2)		//discard hand, redraw 4, other players with 5+ cards discard hand and draw 4
-	{
-	  //discard hand
-	  while(numHandCards(state) > 0)
-	    {
-	      discardCard(handPos, currentPlayer, state, 0);
-	    }
-				
-	  //draw 4
-	  for (i = 0; i < 4; i++)
-	    {
-	      drawCard(currentPlayer, state);
-	    }
-				
-	  //other players discard hand and redraw if hand size > 4
-	  for (i = 0; i < state->numPlayers; i++)
-	    {
-	      if (i != currentPlayer)
-		{
-		  if ( state->handCount[i] > 4 )
-		    {
-		      //discard hand
-		      while( state->handCount[i] > 0 )
-			{
-			  discardCard(handPos, i, state, 0);
-			}
-							
-		      //draw 4
-		      for (j = 0; j < 4; j++)
-			{
-			  drawCard(i, state);
-			}
-		    }
-		}
-	    }
-				
-	}
-      return 0;
+      minionEffect(state, choice1, choice2, handPos, currentPlayer);
 		
     case steward:
       if (choice1 == 1)
@@ -1310,9 +1262,67 @@ int baronEffect(struct gameState *state, int choice1){
         isGameOver(state);
       }
     }
+  } 
+
+  return 0;
+}
+
+
+int minionEffect(struct gameState *state, int choice1, int choice2, int handPos, int currentPlayer){
+  //+1 action
+  state->numActions++;
+  
+  //discard card from hand
+  discardCard(handPos, currentPlayer, state, 0);
+  
+  if (choice1)    //+2 coins
+  {
+    state->coins += 2;
+  }
+  else if (choice2)   //discard hand, redraw 4, other players with 5+ cards discard hand and draw 4
+  {
+    //discard hand
+    discardHand(state, currentPlayer);
+        
+    //draw 4
+    drawCards(state, currentPlayer, 4);
+        
+    //other players discard hand and redraw if hand size > 4
+    int player;
+    for (player = 0; player < state->numPlayers; player++)
+    {
+      if (player != currentPlayer)
+      {
+        if ( state->handCount[player] > 4 )
+        {
+          //discard hand
+          discardHand(state, player)
+              
+          //draw 4
+          drawCards(state, player, 4);
+        }
+      }
+    }
   }
 
   return 0;
+}
+
+void discardHand(struct gameState *state, int player){
+  int handPos = 0;
+  while(state->handCount[player] > 0)
+  {
+    discardCard(handPos, currentPlayer, state, 0);
+    handPos++;
+  }
+}
+
+void drawCards(struct gameState *state, int player, int numbersOfCard){
+  int i;
+  for (i = 0; i < numbersOfCard; i++)
+  {
+    drawCard(player, state);
+  }
 }
 
 //end of dominion.c
