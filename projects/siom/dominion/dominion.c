@@ -1286,14 +1286,14 @@ int baronEffect(struct gameState *state, int choice1){
   int no_estate_found = 0;
 
   if (choice1 > 0){               //Boolean true or going to discard an estate
-    for (handItr = 0 ; handItr <= state->handCount[currentPlayer] ; handItr++){
+    for (handItr = 0 ; handItr < state->handCount[currentPlayer] ; handItr++){
       if (state->hand[currentPlayer][handItr] == estate){//Found an estate card!
         state->coins += 4;        //Add 4 coins to the amount of coins
         discardCard(handItr, currentPlayer, state, 1);
         state->discard[currentPlayer][state->discardCount[currentPlayer]] = state->hand[currentPlayer][handItr];
         state->discardCount[currentPlayer]++;
         no_estate_found = 1;      //Estate card is found on hand
-        break;                    //Exit the loop
+        //break;                    //Exit the loop
       }
     }
   }
