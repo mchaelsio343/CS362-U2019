@@ -1304,6 +1304,73 @@ int ambassadorEffect(struct gameState *state, int revealedCardPos, int numToRetu
   return 0;
 }
 
+int tributeEffect(struct gameState *state, int currentPlayer, int nextPlayer){
+  if ((state->discardCount[nextPlayer] + state->deckCount[nextPlayer]) <= 1){
+    if (state->deckCount[nextPlayer] > 0){
+      tributeRevealedCards[0] = state->deck[nextPlayer][state->deckCount[nextPlayer]-1];
+      state->deckCount[nextPlayer]--;
+    }
+    else if (state->discardCount[nextPlayer] > 0){
+      tributeRevealedCards[0] = state->discard[nextPlayer][state->discardCount[nextPlayer]-1];
+      state->discardCount[nextPlayer]--;
+    }
+    else{
+      //No Card to Reveal
+      if (DEBUG){
+        printf("No cards to reveal\n");
+      }
+    }
+  }
+      
+  else{
+    if (state->deckCount[nextPlayer] == 0){
+      moveDiscardToDeck(state,nextPlayer);  
+      shuffle(nextPlayer,state);//Shuffle the deck
+    } 
+    tributeRevealedCards[0] = state->deck[nextPlayer][state->deckCount[nextPlayer]-1];
+    dicardDeckTop(state,nextPlayer);
+    tributeRevealedCards[1] = state->deck[nextPlayer][state->deckCount[nextPlayer]-1];
+    dicardDeckTop(state,nextPlayer);
+  }    
+           
+  if (tributeRevealedCards[0] == tributeRevealedCards[1]){//If we have a duplicate card, just drop one 
+    state->playedCards[state->playedCardCount] = tributeRevealedCards[1];
+    state->playedCardCount++;
+    tributeRevealedCards[1] = -1;
+  }
+
+  for (i = 0; i <= 2; i ++){
+    if (tributeRevealedCards[i] == copper || tributeRevealedCards[i] == silver || tributeRevealedCards[i] == gold){//Treasure cards
+      state->coins += 2;
+    }  
+    else if (tributeRevealedCards[i] == estate || tributeRevealedCards[i] == duchy || tributeRevealedCards[i] == province || tributeRevealedCards[i] == gardens || tributeRevealedCards[i] == great_hall){//Victory Card Found
+      for(j = 0; j < 2; j++){ 
+        drawCard(currentPlayer, state);
+      }
+    }
+    else{//Action Card
+      state->numActions += 2;
+    }
+  }
+      
+  return 0;
+}
+
+void dicardDeckTop(struct gameState *state, int player){
+  state->deck[player][state->deckCount[player]--] = -1;
+  state->deckCount[player]--;
+}
+
+void moveDiscardToDeck(struct gameState *state, int player){
+  for (i = 0; i < state->discardCount[player]; i++){
+    state->deck[player][i] = state->discard[player][i];//Move to deck
+    state->deckCount[player]++;
+    state->discard[player][i] = -1;
+    state->discardCount[player]--;
+  }
+}
+
+
 void discardHand(struct gameState *state, int player){
   int handPos = 0;
   while(state->handCount[player] > 0)

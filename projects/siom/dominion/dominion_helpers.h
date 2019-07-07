@@ -14,7 +14,10 @@ int cardEffect(int card, int choice1, int choice2, int choice3,
 
 int baronEffect(struct gameState *state, int choice1);
 int ambassadorEffect(struct gameState *state, int revealedCardPos, int numToReturn, int handPos, int currentPlayer);
+int tributeEffect(struct gameState *state, int currentPlayer, int nextPlayer);
 
 void discardHand(struct gameState *state, int player);
 void drawCards(struct gameState *state, int player, int numbersOfCard);
+void dicardDeckTop(struct gameState *state, int player);
+void moveDiscardToDeck(struct gameState *state, int player);
 #endif
