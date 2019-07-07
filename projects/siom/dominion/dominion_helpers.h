@@ -11,7 +11,10 @@ int gainCard(int supplyPos, struct gameState *state, int toFlag, int player);
 int getCost(int cardNumber);
 int cardEffect(int card, int choice1, int choice2, int choice3, 
 	       struct gameState *state, int handPos, int *bonus);
+
 int baronEffect(struct gameState *state, int choice1);
+int ambassadorEffect(struct gameState *state, int revealedCardPos, int numToReturn, int handPos, int currentPlayer);
+
 void discardHand(struct gameState *state, int player);
 void drawCards(struct gameState *state, int player, int numbersOfCard);
 #endif
