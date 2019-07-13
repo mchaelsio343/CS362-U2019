@@ -1235,9 +1235,10 @@ int tributeEffect(struct gameState *state, int currentPlayer, int nextPlayer, in
       }
     }
   }
-      
+ 
   else{
     if (state->deckCount[nextPlayer] == 0){
+      //if (DEBUG) printf("call moveDiscardToDeck()\n");
       moveDiscardToDeck(state,nextPlayer);  
       shuffle(nextPlayer,state);//Shuffle the deck
     } 
@@ -1246,27 +1247,35 @@ int tributeEffect(struct gameState *state, int currentPlayer, int nextPlayer, in
     tributeRevealedCards[1] = state->deck[nextPlayer][state->deckCount[nextPlayer]-1];
     dicardDeckTop(state,nextPlayer);
   }    
-           
+   
   if (tributeRevealedCards[0] == tributeRevealedCards[1]){//If we have a duplicate card, just drop one 
     state->playedCards[state->playedCardCount] = tributeRevealedCards[1];
     state->playedCardCount++;
     tributeRevealedCards[1] = -1;
   }
 
+/*  if (DEBUG){
+    printf("tributeRevealedCards[0] = %d\n",tributeRevealedCards[0]);
+    printf("tributeRevealedCards[1] = %d\n",tributeRevealedCards[1]);
+  }*/
+
   for (i = 0; i <= 2; i ++){
     if (tributeRevealedCards[i] == copper || tributeRevealedCards[i] == silver || tributeRevealedCards[i] == gold){//Treasure cards
       state->coins += 2;
+      //if (DEBUG) printf("coins\n");
     }  
     else if (tributeRevealedCards[i] == estate || tributeRevealedCards[i] == duchy || tributeRevealedCards[i] == province || tributeRevealedCards[i] == gardens || tributeRevealedCards[i] == great_hall){//Victory Card Found
       for(j = 0; j < 2; j++){ 
         drawCard(currentPlayer, state);
       }
+      //if (DEBUG) printf("draw\n");
     }
     else{//Action Card
       state->numActions += 2;
+      //if (DEBUG) printf("action\n");
     }
   }
-      
+
   return 0;
 }
 
@@ -1303,7 +1312,9 @@ void dicardDeckTop(struct gameState *state, int player){
 }
 
 void moveDiscardToDeck(struct gameState *state, int player){
+  if (DEBUG) printf("moveDiscardToDeck: state->discardCount[player] = %d\n", state->discardCount[player]);
   for (i = 0; i < state->discardCount[player]; i++){
+    if (DEBUG) printf("moveDiscardToDeck: i = %d\n", i);
     state->deck[player][i] = state->discard[player][i];//Move to deck
     state->deckCount[player]++;
     state->discard[player][i] = -1;
