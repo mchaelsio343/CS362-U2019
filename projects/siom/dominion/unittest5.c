@@ -8,7 +8,7 @@
  * Include the following lines in your makefile:
  *
  * unittest5: unittest5.c dominion.o rngs.o
- *      gcc -o unittest4 -g  unittest5.c dominion.o rngs.o $(CFLAGS)
+ *      gcc -o unittest5 -g  unittest5.c dominion.o rngs.o $(CFLAGS)
  */
 
 
