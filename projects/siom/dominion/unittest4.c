@@ -20,7 +20,7 @@
 #include "rngs.h"
 #include <stdlib.h>
 
-#define TESTCARD "minion"
+#define TESTCARD "tribute"
 
 int main() {
     int newCards = 0;

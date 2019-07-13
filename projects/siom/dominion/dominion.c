@@ -1296,6 +1296,7 @@ int mineEffect(struct gameState *state, int discardCardPos, int treasure, int ha
   //discard trashed card
   for (i = 0; i < state->handCount[currentPlayer]; i++)
   {
+    printf("discard loop\n");
     if (state->hand[currentPlayer][i] == j)
       {
         discardCard(i, currentPlayer, state, 0);      
