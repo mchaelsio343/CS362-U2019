@@ -1181,6 +1181,7 @@ int ambassadorEffect(struct gameState *state, int revealedCardPos, int numToRetu
     }
   }
 
+  printf("%d < %d\n",numToReturn,j);
   if (numToReturn < j) return -1;        
 
   if (DEBUG) 
