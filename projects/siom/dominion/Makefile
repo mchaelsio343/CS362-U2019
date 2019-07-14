@@ -1,5 +1,8 @@
 CFLAGS= -Wall -fpic -coverage -lm -std=c99
 
+cardtest5: cardtest5.c dominion.o rngs.o
+	gcc -o cardtest5 -g  cardtest5.c dominion.o rngs.o $(CFLAGS)
+
 cardtest4: cardtest4.c dominion.o rngs.o
 	gcc -o cardtest4 -g  cardtest4.c dominion.o rngs.o $(CFLAGS)
 
