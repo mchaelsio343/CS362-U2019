@@ -451,6 +451,7 @@ int scoreFor (int player, struct gameState *state) {
       if (state->deck[player][i] == gardens) { score = score + ( fullDeckCount(player, 0, state) / 10 ); };
     }
 
+printf("Before return score = %d\n", score);
   return score;
 }
 
@@ -471,6 +472,7 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state) {
       else
 	{
 	  players[i] = scoreFor (i, state);
+    //printf("players[%d] = %d \n", i, scoreFor (i, state));
 	}
     }
 
@@ -484,6 +486,7 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state) {
 	}
     }
   highScore = players[j];
+  printf("highScore = %d \n", highScore);
 
   //add 1 to players who had less turns
   currentPlayer = whoseTurn(state);
@@ -491,6 +494,7 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state) {
     {
       if ( players[i] == highScore && i > currentPlayer )
 	{
+    printf("players who had less turns!!!!!!!!\n");
 	  players[i]++;
 	}
     }

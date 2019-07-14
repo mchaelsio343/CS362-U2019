@@ -1,5 +1,5 @@
 /*
- * cardtest3.c
+ * cardtest4.c
  *
  
  */
@@ -7,8 +7,8 @@
 /*
  * Include the following lines in your makefile:
  *
- * cardtest3: cardtest3.c dominion.o rngs.o
- *      gcc -o cardtest3 -g  cardtest3.c dominion.o rngs.o $(CFLAGS)
+ * cardtest4: cardtest4.c dominion.o rngs.o
+ *      gcc -o cardtest4 -g  cardtest4.c dominion.o rngs.o $(CFLAGS)
  */
 
 
@@ -20,7 +20,7 @@
 #include "rngs.h"
 #include <stdlib.h>
 
-#define TESTCARD "endTurn()"
+#define TESTCARD "getWinners()"
 
 int main() {
     int newCards = 0;
@@ -41,6 +41,7 @@ int main() {
     int returnValue = 0;
     int expectedReturnValue = 0;
     int expectedCount = 0;
+    int players[4] = {0, 0, 0, 0};
     struct gameState G, testG;
     int k[10] = {adventurer, embargo, village, minion, mine, cutpurse,
             sea_hag, tribute, smithy, council_room};
@@ -48,8 +49,8 @@ int main() {
 
     printf("----------------- Testing Card: %s ----------------\n", TESTCARD);
 
-    // ----------- TEST 1: Current player and next player. --------------
-    printf("TEST 1: Current player and next player.\n");
+    // ----------- TEST 1: 2 Players with different scores. --------------
+    printf("TEST 1: 2 Players with different scores.\n");
 
     // initialize game
     initializeGame(numPlayers, k, seed, &G);
@@ -57,44 +58,46 @@ int main() {
     // copy the game state to a test case
     memcpy(&testG, &G, sizeof(struct gameState));
 
-    endTurn(&testG);
+    testG.hand[thisPlayer][4] = duchy;
 
-    printf("# current player (player[0]) # \n");
-    printf("hand count = %d, expected = %d\n", testG.handCount[thisPlayer], 0);
-    printAssert(testG.handCount[thisPlayer] == 0);
-    
-    printf("deck count = %d, expected = %d\n", testG.deckCount[thisPlayer], G.deckCount[thisPlayer]);
-    printAssert(testG.deckCount[thisPlayer] == G.deckCount[thisPlayer]);
+    getWinners(players, &testG);
 
-    printf("dicard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + G.handCount[thisPlayer]);
-    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + G.handCount[thisPlayer]);
+    printf("players[0] = %d, expected = %d\n", players[0], 1);
+    printAssert(players[0] == 1);
+    printf("players[1] = %d, expected = %d\n", players[1], 0);
+    printAssert(players[1] == 0);
 
 
-    printf("# next player (player[1]) # \n");
-    printf("hand count = %d, expected = %d\n", testG.handCount[thisPlayer+1], 5);
-    printAssert(testG.handCount[thisPlayer+1] == 5);
-    
-    printf("deck count = %d, expected = %d\n", testG.deckCount[thisPlayer+1], G.deckCount[thisPlayer+1] - 5);
-    printAssert(testG.deckCount[thisPlayer+1] == G.deckCount[thisPlayer+1] - 5);
+    // ----------- TEST 2: 2 Players with same scores. whoseTurn = 0. --------------
+    printf("TEST 2: 2 Players with same scores. whoseTurn = 0.\n");
 
-    printf("dicard count = %d, expected = %d\n", testG.discardCount[thisPlayer+1], G.discardCount[thisPlayer+1]);
-    printAssert(testG.discardCount[thisPlayer+1] == G.discardCount[thisPlayer+1]);
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
+
+    getWinners(players, &testG);
+    testG.whoseTurn = 0;
+
+    printf("# whoseTurn = %d #\n", testG.whoseTurn);
+    printf("players[0] = %d, expected = %d\n", players[0], 0);
+    printAssert(players[0] == 0);
+    printf("players[1] = %d, expected = %d\n", players[1], 1);
+    printAssert(players[1] == 1);
 
 
-    // ----------- TEST 2: Current player is the last one. --------------
-    printf("TEST 2: Current player is the last one.\n");
+    // ----------- TEST 3: 2 Players with same scores. whoseTurn = 1. --------------
+    printf("TEST 3: 2 Players with same scores. whoseTurn = 1.\n");
 
-    // initialize game
-    numPlayers = 4;
-    initializeGame(numPlayers, k, seed, &G);
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
 
-    // set the current player be the last player 
-    testG.whoseTurn = numPlayers - 1;
+    getWinners(players, &testG);
+    testG.whoseTurn = 1;
 
-    endTurn(&testG);
-
-    printf("After calling endTurn(), whoseTurn = %d, expected = %d\n", testG.whoseTurn, 0);
-    printAssert(testG.whoseTurn == 0);
+    printf("# whoseTurn = %d #\n", testG.whoseTurn);
+    printf("players[0] = %d, expected = %d\n", players[0], 1);
+    printAssert(players[0] == 1);
+    printf("players[1] = %d, expected = %d\n", players[1], 0);
+    printAssert(players[1] == 0);
 
 
     printf("\n >>>>> Testing complete %s <<<<<\n\n", TESTCARD);
