@@ -74,6 +74,9 @@ int main() {
     printf("Discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], 0);
     printAssert(testG.discardCount[thisPlayer] == 0);
 
+    printf("Hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + 1);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + 1);
+
 
     // ----------- TEST 2: Player has 5 cards in deck. --------------
     printf("TEST 2: Player has 5 cards in deck.\n");
@@ -92,8 +95,10 @@ int main() {
     printf("Discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer]);
     printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer]);
 
+    printf("Hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + 1);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + 1);
 
-    // ----------- TEST 2: Player has 5 cards in deck. --------------
+    // ----------- TEST 3: Player has no cards in neither deck nor dicard. --------------
     printf("TEST 3: Player has no cards in neither deck nor dicard.\n");
 
     // initialize game
@@ -129,6 +134,8 @@ int main() {
     printf("Discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer]);
     printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer]);
 
+    printf("Hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + 1);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + 1);
 
     printf("\n >>>>> Testing complete %s <<<<<\n\n", TESTCARD);
 

@@ -149,7 +149,7 @@ int main() {
     tributeEffect(&testG, thisPlayer, thisPlayer + 1, tributeRevealedCards);
 
     xtraCoins = 2;
-    printf("current player (player[0]): coins = %d, expected = %d\n", testG.coins, G.coins + xtraCoins*2);
+    printf("current player (player[0]): coins = %d, expected = %d\n", testG.coins, G.coins + xtraCoins);
     printAssert(testG.coins == G.coins + xtraCoins*2);
 
     draw = 0;

@@ -50,6 +50,7 @@ int main() {
 
 
     // ----------- TEST 1 - 5 : choice2 = [-1, 3]. Test different number of returned card. --------------
+    printf("TEST 1 - 5 : choice2 = [-1, 3]. Test different number of returned card.\n");
     
     // set hand card so that there is enough card to return
     setHandCards(&G, thisPlayer, ambassador, copper, copper, copper, copper);
@@ -64,7 +65,6 @@ int main() {
     for ( i = -1 ; i <= 3 ; i++){
         choice2 = i;
         printf("TEST %d: choice2 = %d. Test different number of returned card.\n", i + 2, choice2);
-        printf(" i = %d \n",i);
         returnValue = ambassadorEffect(&testG, choice1, choice2, choice3, thisPlayer);
 
         if ( i >= 0 && i <= 2 ) expectedReturnValue = 0;
@@ -105,11 +105,11 @@ int main() {
     printAssert(returnValue == expectedReturnValue);
 
 
-    // ----------- TEST 7 : choice2 = 2. Enought card to return. --------------
+    // ----------- TEST 8 : choice2 = 2. Enought card to return. --------------
     printf("TEST 8 : choice2 = 2. Enought card to return.\n");
 
     // set hand card so that there is not enough card to return
-    setHandCards(&G, thisPlayer, ambassador, copper, copper, silver, silver);
+    setHandCards(&G, thisPlayer, ambassador, copper, copper, copper, silver);
 
     // copy the game state to a test case
     memcpy(&testG, &G, sizeof(struct gameState));
@@ -121,10 +121,10 @@ int main() {
     expectedReturnValue = -1;
     returnValue = ambassadorEffect(&testG, choice1, choice2, choice3, thisPlayer);
 
-    printf("Card Supply Count = %d, expected = %d\n", testG.supplyCount[copper], G.supplyCount[copper] + choice2);
+    printf("Card Supply Count = %d, expected = %d\n", testG.supplyCount[copper], G.supplyCount[copper] + choice2 - (numPlayers - 1));
     printAssert(testG.supplyCount[copper] == G.supplyCount[copper] + choice2);
 
-    printf("# current player# \n");
+    printf("# current player # \n");
     printf("current player (player[0]): hand count =  %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] - choice2 - discarded);
     printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] - choice2 - discarded);
 

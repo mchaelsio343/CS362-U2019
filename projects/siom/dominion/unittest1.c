@@ -92,12 +92,11 @@ int main() {
     printf("coins = %d, expected = %d\n", testG.coins, G.coins);
     printAssert(testG.coins == G.coins);
 
-    printf("dicard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded + newCards);
-    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded + newCards);
+    printf("dicard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded );
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
 
 
-    // ----------- TEST 3: choice1 = 3 = trash two cards --------------
-
+    // ----------- TEST 3: choice1 = 0. Discard an estate and gain 4 coins. But Player has no estate. --------------
     printf("TEST 3: choice1 = 0. Discard an estate and gain 4 coins. But Player has no estate.\n");
 
     // set hand cards with one estate plus others card rather than estate
@@ -119,8 +118,8 @@ int main() {
     printf("coins = %d, expected = %d\n", testG.coins, G.coins);
     printAssert(testG.coins == G.coins);
 
-    printf("dicard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded + newCards);
-    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded + newCards);
+    printf("dicard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded);
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
 
 
     printf("\n >>>>> Testing complete %s <<<<<\n\n", TESTCARD);

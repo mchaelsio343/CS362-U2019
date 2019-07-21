@@ -77,7 +77,6 @@ int main() {
     getWinners(players, &testG);
     testG.whoseTurn = 0;
 
-    printf("# whoseTurn = %d #\n", testG.whoseTurn);
     printf("players[0] = %d, expected = %d\n", players[0], 0);
     printAssert(players[0] == 0);
     printf("players[1] = %d, expected = %d\n", players[1], 1);

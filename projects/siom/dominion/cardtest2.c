@@ -51,10 +51,10 @@ int main() {
     // ----------- TEST 1: Deck count = 0. --------------
     printf("TEST 1: Deck count = 0.\n");
 
-    returnValue = initializeGame(numPlayers, k, seed, &G);
+    initializeGame(numPlayers, k, seed, &G);
     G.deckCount[thisPlayer] = 0;
 
-    shuffle(thisPlayer, &G); 
+    returnValue = shuffle(thisPlayer, &G); 
 
     expectedReturnValue = -1;
     printf("Return value = %d, expected = %d\n", returnValue, expectedReturnValue);

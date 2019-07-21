@@ -129,7 +129,7 @@ int main() {
     printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
 
     // other player, player[1]
-    discarded = testG.handCount[1];
+    discarded = 0;
     printf("# other player who has 3 cards on hand # \n");
     printf("other player (player[1]): hand count = %d, expected = %d\n", testG.handCount[1], G.handCount[1]);
     printAssert(testG.handCount[1] == G.handCount[1]);
@@ -142,7 +142,7 @@ int main() {
 
 
     // other player, player[2]
-    discarded = testG.handCount[2];
+    discarded = 0;
     printf("# other player who has 4 cards on hand # \n");
     printf("other player (player[2]): hand count = %d, expected = %d\n", testG.handCount[2], G.handCount[2]);
     printAssert(testG.handCount[2] == G.handCount[2]);

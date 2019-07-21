@@ -208,6 +208,7 @@ int shuffle(int player, struct gameState *state) {
 
   if (state->deckCount[player] < 1)
     return -1;
+
   qsort ((void*)(state->deck[player]), state->deckCount[player], sizeof(int), compare); 
   /* SORT CARDS IN DECK TO ENSURE DETERMINISM! */
 
@@ -451,7 +452,6 @@ int scoreFor (int player, struct gameState *state) {
       if (state->deck[player][i] == gardens) { score = score + ( fullDeckCount(player, 0, state) / 10 ); };
     }
 
-printf("Before return score = %d\n", score);
   return score;
 }
 
@@ -472,7 +472,6 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state) {
       else
 	{
 	  players[i] = scoreFor (i, state);
-    //printf("players[%d] = %d \n", i, scoreFor (i, state));
 	}
     }
 
@@ -486,7 +485,6 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state) {
 	}
     }
   highScore = players[j];
-  printf("highScore = %d \n", highScore);
 
   //add 1 to players who had less turns
   currentPlayer = whoseTurn(state);
@@ -494,7 +492,6 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state) {
     {
       if ( players[i] == highScore && i > currentPlayer )
 	{
-    printf("players who had less turns!!!!!!!!\n");
 	  players[i]++;
 	}
     }
@@ -1179,13 +1176,12 @@ int ambassadorEffect(struct gameState *state, int revealedCardPos, int numToRetu
 
   for (i = 0; i < state->handCount[currentPlayer]; i++)
   {
-    if (i != handPos && i == state->hand[currentPlayer][revealedCardPos] && i != revealedCardPos)
+   if (i != handPos && i == state->hand[currentPlayer][revealedCardPos] && i != revealedCardPos)
     {
         j++;
     }
   }
 
-  printf("%d < %d\n",numToReturn,j);
   if (numToReturn < j) return -1;        
 
   if (DEBUG) 
@@ -1223,6 +1219,7 @@ int ambassadorEffect(struct gameState *state, int revealedCardPos, int numToRetu
 }
 
 int tributeEffect(struct gameState *state, int currentPlayer, int nextPlayer, int* tributeRevealedCards){
+
   if ((state->discardCount[nextPlayer] + state->deckCount[nextPlayer]) <= 1){
     if (state->deckCount[nextPlayer] > 0){
       tributeRevealedCards[0] = state->deck[nextPlayer][state->deckCount[nextPlayer]-1];
@@ -1300,7 +1297,6 @@ int mineEffect(struct gameState *state, int discardCardPos, int treasure, int ha
   //discard trashed card
   for (i = 0; i < state->handCount[currentPlayer]; i++)
   {
-    printf("discard loop\n");
     if (state->hand[currentPlayer][i] == j)
       {
         discardCard(i, currentPlayer, state, 0);      
