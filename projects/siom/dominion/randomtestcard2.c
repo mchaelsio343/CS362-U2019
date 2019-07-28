@@ -38,7 +38,7 @@ int main() {
 
     printf("----------------- Testing Card: %s ----------------\n", TESTCARD);
  
-    for ( m = 1; m <= 1 ; m++){
+    for ( m = 1; m <= 100 ; m++){
         printf("---------------- Run %d ----------------\n",m);
 
         // gain 2 coins

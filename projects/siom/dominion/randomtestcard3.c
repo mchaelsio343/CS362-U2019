@@ -30,6 +30,7 @@ int main() {
     int exception[] = {-1};
     int numberOfEstate;
     int tributeRevealedCards[2] = {-1, -1};
+    int cardType1, cardType2;
 
     // initialize a game state and player cards
     initializeGame(numPlayers, k, seed, &G);
@@ -39,12 +40,14 @@ int main() {
 
     printf("----------------- Testing Card: %s ----------------\n", TESTCARD);
  
-    for ( m = 1; m <= 27 ; m++){
+    for ( m = 1; m <= 27*27 ; m++){
         printf("---------------- Run %d ----------------\n",m);
 
         xtraCoins = 0;
         xtraAction = 0;
         draw = 0;
+        cardType1 = 0;
+        cardType2 = 0;
 
         // set gameState to random byte 
         for ( i = 0; i < sizeof(struct gameState);i++ ){
@@ -56,10 +59,10 @@ int main() {
 
         // set hand count, deck count, and discard count
         for ( i = 0 ; i < G.numPlayers ; i++){
-            if ( i == thisPlayer)
-                G.handCount[i] = rand()%MAX_HAND+1;
-            else
-                G.handCount[i] = rand()%2+4;   // for other players, limit the subset as boundary case
+            //if ( i == thisPlayer)
+            G.handCount[i] = rand()%MAX_HAND+1;
+            //else
+            //    G.handCount[i] = rand()%2+4;   // for other players, limit the subset as boundary case
 
             G.deckCount[i] = rand()%3;
             G.discardCount[i] = rand()%3;
@@ -97,22 +100,24 @@ int main() {
         }
 
 /*        if (G.deckCount[thisPlayer + 1] == 1 && G.discardCount[thisPlayer + 1] == 0){
-
+            cardType1 = getCardType(G.deck[thisPlayer + 1][0]);
+            cardType2 = 0;
         }
         else if (G.deckCount[thisPlayer + 1] == 0 && G.discardCount[thisPlayer + 1] == 1){
-
+            cardType1 = getCardType(G.discard[thisPlayer + 1][0]);
+            cardType2 = 0;
         }
         else if ((G.deckCount[thisPlayer + 1] + G.discardCount[thisPlayer + 1]) == 0){
-
+            cardType1 = 0;
+            cardType2 = 0;
         }
         else if ((G.deckCount[thisPlayer + 1] + G.discardCount[thisPlayer + 1]) >= 2){
-
+            if (G.deckCount[thisPlayer + 1] ==)
         }*/
 
         for (i = 0; i <= 2; i ++){
             if (tributeRevealedCards[i] == copper || tributeRevealedCards[i] == silver || tributeRevealedCards[i] == gold){//Treasure cards
                 xtraCoins += 2;
-
             }  
             else if (tributeRevealedCards[i] == estate || tributeRevealedCards[i] == duchy || tributeRevealedCards[i] == province || tributeRevealedCards[i] == gardens || tributeRevealedCards[i] == great_hall){//Victory Card Found
                 draw += 2;
@@ -142,7 +147,19 @@ int main() {
     return 0;
 }
 
+int getCardType(int card){
+    if (card == copper || card == silver || card == gold){//Treasure cards
+        return 1;
+    }  
+    else if (card == estate || card == duchy || card == province || card == gardens || card == great_hall){//Victory Card Found
+        return  2;
+    }
+    else if (card >=0 ){//Action Card
+        return 3;
+    }
 
+    return 0;
+}
 
 void printAssert(int flag){
     if(flag) printf("Passed\n-\n");

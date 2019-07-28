@@ -1,5 +1,15 @@
 CFLAGS= -Wall -fpic -coverage -lm -std=c99
 
+randomtestresults: randomtestcard1 randomtestcard2 randomtestcard3
+	./randomtestcard1 >> randomtestresults.out
+	gcov dominion.c -b -f >> randomtestresults.out
+
+	./randomtestcard2 >> randomtestresults.out
+	gcov dominion.c -b -f >> randomtestresults.out
+
+	./randomtestcard3 >> randomtestresults.out
+	gcov dominion.c -b -f >> randomtestresults.out
+
 randomtestcard1: randomtestcard1.c dominion.o rngs.o
 	gcc -o randomtestcard1 -g  randomtestcard1.c dominion.o rngs.o $(CFLAGS)
 
@@ -45,4 +55,4 @@ player: player.c interface.o
 all: playdom player 
 
 clean:
-	rm -f *.o playdom.exe playdom player player.exe  *.gcov *.gcda *.gcno *.so *.out testDrawCard testDrawCard.exe
+	rm -f *.o playdom.exe playdom player player.exe  *.gcov *.gcda *.gcno *.so *.out testDrawCard testDrawCard.exe randomtestresults.out
