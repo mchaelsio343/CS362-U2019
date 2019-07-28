@@ -64,7 +64,7 @@ int initializeGame(int numPlayers, int kingdomCards[10], int randomSeed,
       }
         }
     }
-
+ 
 
   //initialize supply
   ///////////////////////////////
