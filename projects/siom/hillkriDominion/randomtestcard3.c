@@ -2,136 +2,261 @@
 #include "dominion_helpers.h"
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include "rngs.h"
 #include <stdlib.h>
-#include <math.h>
+#include <time.h>
 
-#define REASONABLE_VALUE 25
-#define NUM_TESTS 300
+#define TESTCARD "tribute"
+
+int main() {
+    int newCards = 0;
+    int discarded = 1;
+    int xtraCoins = 0;
+    int xtraAction = 0;
+    int draw = 0;
+    int shuffledCards = 0;
+
+    int i, j, m;
+    int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
+    int remove1, remove2;
+    int seed = 1000;
+    int numPlayers = 2;
+    int thisPlayer = 0;
+    int handCount = 5;
+    struct gameState G, testG;
+    int k[10] = {adventurer, embargo, village, minion, mine, cutpurse,
+            sea_hag, tribute, smithy, council_room};
+    int exception[] = {-1};
+    int numberOfEstate;
+    int tributeRevealedCards[2] = {-1, -1};
+    int cardType1, cardType2;
+
+    // initialize a game state and player cards
+    initializeGame(numPlayers, k, seed, &G);
+
+    // seeding
+    srand(time(NULL));
+
+    printf("----------------- Testing Card: %s ----------------\n", TESTCARD);
+ 
+    for ( m = 1; m <= 27*27 ; m++){
+        printf("---------------- Run %d ----------------\n",m);
+
+        xtraCoins = 0;
+        xtraAction = 0;
+        draw = 0;
+        cardType1 = 0;
+        cardType2 = 0;
+
+        // set gameState to random byte 
+        for ( i = 0; i < sizeof(struct gameState);i++ ){
+            ((char*)&G)[i] = floor(rand()*256);
+        }
+
+        // set number of player
+        G.numPlayers = rand()%3 + 2;
+
+        // set hand count, deck count, and discard count
+        for ( i = 0 ; i < G.numPlayers ; i++){
+            //if ( i == thisPlayer)
+            G.handCount[i] = rand()%MAX_HAND+1;
+            //else
+            //    G.handCount[i] = rand()%2+4;   // for other players, limit the subset as boundary case
+
+            G.deckCount[i] = rand()%3;
+            G.discardCount[i] = rand()%3;
+        }
+
+        // randomly assign card to next player's deck 
+        for ( i = 0 ; i < G.deckCount[thisPlayer + 1] ; i++){
+            G.deck[thisPlayer + 1][i] = rand()%(treasure_map+1);
+        }
+
+        // randomly assign card to next player's discard
+        for ( i = 0 ; i < G.discardCount[thisPlayer + 1] ; i++){
+            G.discard[thisPlayer + 1][i] = rand()%(treasure_map+1);
+        }
+
+        // set current player's coins
+        G.coins = rand()%(60+1)*1 + rand()%(40+1)*3 + rand()%(30+1)*6;
+
+        // set current player's action
+        G.numActions = rand()%10; 
+
+        // make a copy for comprasion
+        memcpy(&testG, &G, sizeof(struct gameState));
+
+        // lets call the function
+        tributeEffect(&testG, thisPlayer, thisPlayer + 1, tributeRevealedCards);
+
+        // assertion
+        printf("Next player: deck count = %d | hand count = %d \n", G.deckCount[thisPlayer + 1], G.discardCount[thisPlayer + 1]);
+        for ( i = 0 ; i < G.deckCount[thisPlayer + 1] ; i++){
+            printf("Next player: deck[%d] = %d \n", i,  G.deck[thisPlayer + 1][i]);
+        }
+        for ( i = 0 ; i < G.discardCount[thisPlayer + 1] ; i++){
+            printf("Next player: discard[%d] = %d \n", i,  G.discard[thisPlayer + 1][i]);
+        }
+
+/*        if (G.deckCount[thisPlayer + 1] == 1 && G.discardCount[thisPlayer + 1] == 0){
+            cardType1 = getCardType(G.deck[thisPlayer + 1][0]);
+            cardType2 = 0;
+        }
+        else if (G.deckCount[thisPlayer + 1] == 0 && G.discardCount[thisPlayer + 1] == 1){
+            cardType1 = getCardType(G.discard[thisPlayer + 1][0]);
+            cardType2 = 0;
+        }
+        else if ((G.deckCount[thisPlayer + 1] + G.discardCount[thisPlayer + 1]) == 0){
+            cardType1 = 0;
+            cardType2 = 0;
+        }
+        else if ((G.deckCount[thisPlayer + 1] + G.discardCount[thisPlayer + 1]) >= 2){
+            if (G.deckCount[thisPlayer + 1] ==)
+        }*/
+
+        for (i = 0; i <= 2; i ++){
+            if (tributeRevealedCards[i] == copper || tributeRevealedCards[i] == silver || tributeRevealedCards[i] == gold){//Treasure cards
+                xtraCoins += 2;
+            }  
+            else if (tributeRevealedCards[i] == estate || tributeRevealedCards[i] == duchy || tributeRevealedCards[i] == province || tributeRevealedCards[i] == gardens || tributeRevealedCards[i] == great_hall){//Victory Card Found
+                draw += 2;
+            }
+            else if (tributeRevealedCards[i] >=0 ){//Action Card
+                xtraAction += 2;
+            }
+        }
+
+        printf("current player (player[0]): coins = %d, expected = %d\n", testG.coins, G.coins + xtraCoins);
+        printAssert(testG.coins == G.coins + xtraCoins*2);
+
+        printf("current player (player[0]): hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + draw);
+        printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + draw);
 
 
-int runSuccess;
-int runFail;
-int testSuccess;
-int testFail;
+        printf("current player (player[0]): number of action = %d, expected = %d\n", testG.numActions, G.numActions + xtraAction);
+        printAssert(testG.numActions == G.numActions + xtraAction);
 
-int printResults();
+        printf("\n");
 
-int assertTrue(int check, struct gameState* G, struct gameState* testG, int currentPlayer, int nextPlayer, int* tributeRevealCards);
+    }
 
-int main(){
+    printf("\n >>>>> Testing complete %s <<<<<\n\n", TESTCARD);
 
-	for(int i = 0; i < NUM_TESTS; i++){
-		int tributeRevealCards[2];
-		int testTributeRevealCards[2];
-		int numPlayers = floor(Random() * MAX_PLAYERS);
-		int currentPlayer = floor(Random() * numPlayers);
-		int nextPlayer;
-		if(currentPlayer > 2){
-			nextPlayer = 0;
-		}else{
-			nextPlayer = currentPlayer+1;
-		}
-		struct gameState G, testG;
-		int seed = floor(Random() * 1000);//testing with relatively low numbers to find what is stalling the test
-		int k[10] = {feast, tribute, steward, gardens, embargo,
-				smithy, village, sea_hag, baron, great_hall};
-		initializeGame(numPlayers, k, seed, &G);
-		G.handCount[currentPlayer] = floor(Random() * REASONABLE_VALUE);//testing with low numbers to find what is stalling the test
-		for(int j = 0; j < G.handCount[currentPlayer]; j++){
-			G.hand[currentPlayer][j] = floor(Random() * 27);
-		}
-		G.deckCount[currentPlayer] = floor(Random() * REASONABLE_VALUE);
-		for(int j = 0; j < G.deckCount[currentPlayer]; j++){
-			G.deck[currentPlayer][j] = floor(Random() * 27);
-		}
-		G.discardCount[currentPlayer] = floor(Random() * REASONABLE_VALUE);
-		for(int j = 0; j < G.discardCount[currentPlayer]; j++){
-			G.discard[currentPlayer][j] = floor(Random() * 27);
-		}
-		G.deckCount[nextPlayer] = floor(Random() * REASONABLE_VALUE);
-		for(int j = 0; j < G.deckCount[nextPlayer]; j++){
-			G.deck[nextPlayer][j] = floor(Random() * 27);
-		}
-		G.discardCount[nextPlayer] = floor(Random() * REASONABLE_VALUE);
-		for(int j = 0; j < G.discardCount[nextPlayer]; j++){
-			G.discard[nextPlayer][j] = floor(Random() * 27);
-		}
-		G.playedCardCount = floor(Random() * REASONABLE_VALUE);
-		for(int j = 0; j < G.playedCardCount; j++){
-			G.playedCards[j] = floor(Random() * 27);
-		}
-		int check;
-		memcpy(&testG, &G, sizeof(struct gameState));
-		check = tributeEffect(&testG, currentPlayer, nextPlayer, testTributeRevealCards);
-		assertTrue(check, &G, &testG, currentPlayer, nextPlayer, tributeRevealCards);
-	}
-	printResults();
 
-	return 0;
+    return 0;
 }
 
-int assertTrue(int check, struct gameState* G, struct gameState* testG, int currentPlayer, int nextPlayer, int* tributeRevealCards){
-	
-	if (G->deckCount[nextPlayer] == 0) {
-		for (int i = 0; i < G->discardCount[nextPlayer]; i++) {
-			G->deck[nextPlayer][i] = G->discard[nextPlayer][i];//Move to deck
-			G->deckCount[nextPlayer]++;
-			G->discard[nextPlayer][i] = -1;
-			G->discardCount[nextPlayer]--;
-		}
+int getCardType(int card){
+    if (card == copper || card == silver || card == gold){//Treasure cards
+        return 1;
+    }  
+    else if (card == estate || card == duchy || card == province || card == gardens || card == great_hall){//Victory Card Found
+        return  2;
+    }
+    else if (card >=0 ){//Action Card
+        return 3;
+    }
 
-		shuffle(nextPlayer, G);//Shuffle the deck
-	}
-
-	for (int i = 0; i < 2; i++) {	//reveal the two cards from the next player's deck
-		tributeRevealCards[i] = G->deck[nextPlayer][G->deckCount[nextPlayer]-1];
-		G->deck[nextPlayer][G->deckCount[nextPlayer]--] = -1;
-		G->deckCount[nextPlayer]--;
-	}
-
-
-	if (tributeRevealCards[0] == tributeRevealCards[1]) {//If we have a duplicate card, just drop one 
-		G->playedCards[G->playedCardCount] = tributeRevealCards[1];
-		G->playedCardCount++;
-		tributeRevealCards[1] = -1;
-	}
-
-	for (int i = 0; i < 2; i++) {
-		if (tributeRevealCards[i] == copper || tributeRevealCards[i] == silver || tributeRevealCards[i] == gold) {//Treasure cards
-			G->coins += 2;
-		}
-		else if (tributeRevealCards[i] == estate || tributeRevealCards[i] == duchy || tributeRevealCards[i] == province || tributeRevealCards[i] == gardens || tributeRevealCards[i] == great_hall) {//Victory Card Found
-			for (int j = 0; j < 2; j++) {
-				drawCard(currentPlayer, G);
-			}
-		}
-		else {//Action Card
-			G->numActions += 2;
-		}
-	}
-
-	if(check == 0){
-		runSuccess++;
-		if(memcmp(&testG, &G, sizeof(struct gameState)) == 0){
-			testSuccess++;
-		}else{
-			testFail++;
-		}
-	}else{
-		runFail++;
-	}
-
-	return 0;
+    return 0;
 }
 
-int printResults(){
-	
-	printf("\ntributeEffect test results:\n");
-	printf("tributeEffect returned 0 (successful runthrough) %d times out of %d\n", runSuccess, NUM_TESTS);
-	printf("tributeEffect returned -1 (failed runthrough) %d times out of %d\n", runFail, NUM_TESTS);
-	printf("test gameState struct same as control gameState struct %d times out of %d\n", testSuccess, NUM_TESTS);
-	printf("test gameState struct different than control gameState struct %d times out of %d\n\n", testFail, NUM_TESTS);
-	
-	return 0;
+void printAssert(int flag){
+    if(flag) printf("Passed\n-\n");
+    else printf("Failed\n-\n");
+}
+
+void setHandCards(struct gameState *G, int player, int card1, int card2, int card3, int card4, int card5){
+    G->hand[player][0]=card1;
+    G->hand[player][1]=card2;
+    G->hand[player][2]=card3;
+    G->hand[player][3]=card4;
+    G->hand[player][4]=card5;
+}
+
+int assignRandomCardToHand(struct gameState *G, int player, int exception[], int playingCard){
+    int i, j;
+    int randomCard;
+    int exceptionFlag;
+    //if (exception[0] != -1)
+    size_t n = sizeof(exception)/sizeof(exception[0]);
+
+    //printf("here!!! n = %d \n\n", n);
+
+    for ( i = 0; i < G->handCount[player] ; i++ ){  
+       //printf("inside for loop!!!\n\n");
+       do{
+            //printf("inside while loop!!!\n\n");
+            exceptionFlag = 0;
+            randomCard = rand() % (treasure_map+1);
+            //printf("randomCard = %d", randomCard);
+            for( j = 0 ; j < n ; j++){
+                if (randomCard == exception[j]){
+                    exceptionFlag = 1;
+                    break;
+                }
+            }
+       }while(exceptionFlag);
+
+       // random is not the one in exceptinon; assign it to the hand
+       G->hand[player][i] = randomCard;
+
+    }
+
+    //printf("end of assignRandomCardToHand!!!\n\n");
+}
+
+int assignPlayCardToRandomPos(struct gameState *G, int player, int playingCard){
+    int handPos = rand()%G->handCount[player];
+    G->hand[player][handPos] = playingCard;
+    return handPos;
+}
+
+void assignSpecificCardToHand(struct gameState *G, int player, int numberOfCard, int card){
+    int count;
+    int collision;
+    int index;
+
+    if (G->handCount[player] <= 1)
+        return;
+
+    if (numberOfCard > G->handCount[player])
+        numberOfCard = G->handCount[player]-1;
+
+    for( count = 0 ; count < numberOfCard ; count++ ){
+        do{
+            collision = 0;
+            index = rand()%G->handCount[player];
+            //printf("index = %d \n", index);
+            //printf("handcount = %d\n",G->handCount[player]);
+            //printf("card[0]=%d\n", G->hand[player][0]);
+            //printf("card[1]=%d\n", G->hand[player][1]);            
+            //printHand(G,player);
+            if ( G->hand[player][index] == card ) {
+                collision = 1;
+                //printf("collision\n");
+                //printf(" G->hand[player][index] = %d, card = %d \n\n", G->hand[player][index], card);
+            }
+
+        }while(collision);
+
+        G->hand[player][index] = card;
+    }
+}
+
+
+int getSpecificHandCount(struct gameState *G, int player, int card){
+    int count = 0;
+    int i;
+    for(i = 0 ; i < 5; i++){
+        if(G->hand[player][i] == card) count++;
+    }
+    return card;
+}
+
+int printHand(struct gameState *G, int player){
+    int i;
+    for (i = 0; i < G->handCount[player] ; i++){
+        printf("G.hand[%d][%d] = %d \n\n", player, i, G->hand[player][i]);
+    }
 }

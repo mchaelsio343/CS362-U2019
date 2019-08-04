@@ -1,127 +1,215 @@
+/*
+ * unittest5.c
+ *
+ 
+ */
+
+/*
+ * Include the following lines in your makefile:
+ *
+ * unittest5: unittest5.c dominion.o rngs.o
+ *      gcc -o unittest5 -g  unittest5.c dominion.o rngs.o $(CFLAGS)
+ */
+
+
 #include "dominion.h"
 #include "dominion_helpers.h"
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include "rngs.h"
 #include <stdlib.h>
 
 #define TESTCARD "mine"
 
-int assertTrue(struct gameState* testG, struct gameState* G, int xtraCard, int thisPlayer, int played, int upgradeCard, int trashed, int trashCard, int mineFail);
-
 int main() {
+    int newCards = 0;
+    int discarded = 1;
+    int xtraAction = 0;
+    int xtraCoins = 0;
+    int shuffledCards = 0;
+    int draw = 0;
 
-	int seed = 1000;
-	int numPlayers = 2;
-	int thisPlayer = 0;
-	int xtraCard = 1;//quantity of cards gained
-	int played = 1;//quantity of cards played
-	int trashed = 1;//quantity of cards trashed
-	struct gameState G, testG;
-	int k[10] = {adventurer, embargo, village, minion, mine, cutpurse,
-			sea_hag, tribute, smithy, council_room};
-	int trashCard = 0;//hand position of the card to trash
-	int upgradeCard = 5;//enumerated value for silver
-	int handPos = 1;//hand position of the mine card
-	int mineFail = 0;//test for function fail (where it returns -1)
-	// initialize a game state and player cards
-	initializeGame(numPlayers, k, seed, &G);
-	
-	printf("----------------- Testing Card: %s ----------------\n", TESTCARD);
-	
-	// ----------- TEST 1: choice1 = 0 = trash copper; choice2 = 5 = get silver --------------
-	printf("TEST 1: choice1 = 0 = trash card at hand position 0 (copper); upgradeCard = 5 = get silver\n");
-	
-	G.hand[0][0] = copper;
-	G.hand[0][1] = mine;
-	G.hand[0][2] = tribute;
-	G.hand[0][3] = duchy;
-	G.hand[0][4] = smithy;
-	// copy the game state to a test case
-	memcpy(&testG, &G, sizeof(struct gameState));
-	mineFail = mineEffect(&testG, thisPlayer, trashCard, upgradeCard, handPos);
-	assertTrue(&testG, &G, xtraCard, thisPlayer, played, upgradeCard, trashed, trashCard, mineFail);
+    int i, j, m;
+    int handpos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
+    int remove1, remove2;
+    int seed = 1000;
+    int numPlayers = 4;
+    int thisPlayer = 0;
+    int handCount = 5;
+    int returnValue = 0;
+    int expectedReturnValue = 0;
+    struct gameState G, testG;
+    int k[10] = {adventurer, embargo, village, minion, mine, cutpurse,
+            sea_hag, tribute, smithy, council_room};
 
-	// ----------- TEST 2: trashCard = 0 = trash silver; upgradeCard = 6 = get gold --------------
-	printf("TEST 2: trashCard = 0 = trash card at hand position 0 (silver); upgradeCard = 6 = get gold\n");
+    // initialize a game state and player cards
+    initializeGame(numPlayers, k, seed, &G);
 
-	G.hand[0][0] = silver;
-	G.hand[0][1] = mine;
-	G.hand[0][2] = tribute;
-	G.hand[0][3] = duchy;
-	G.hand[0][4] = smithy;
-	upgradeCard = 6;
-	mineFail = 0;///reset boolean
-	// copy the game state to a test case
-	memcpy(&testG, &G, sizeof(struct gameState));
-	mineFail = mineEffect(&testG, thisPlayer, trashCard, upgradeCard, handPos);
-	assertTrue(&testG, &G, xtraCard, thisPlayer, played, upgradeCard, trashed, trashCard, mineFail);
+    printf("----------------- Testing Card: %s ----------------\n", TESTCARD);
 
-	// ----------- TEST 3: trashCard = 0 = trash gold; upgradeCard = 6 = get gold --------------
-	printf("TEST 3: trashCard = 0 = trash card at hand position 0 (gold); upgradeCard = 6 = get gold\n");
-	
-	G.hand[0][0] = gold;
-	G.hand[0][1] = mine;
-	G.hand[0][2] = tribute;
-	G.hand[0][3] = duchy;
-	G.hand[0][4] = smithy;
 
-	mineFail = 0;///reset boolean
-	// copy the game state to a test case
-	memcpy(&testG, &G, sizeof(struct gameState));
-	mineFail = mineEffect(&testG, thisPlayer, trashCard, upgradeCard, handPos);
-	assertTrue(&testG, &G, xtraCard, thisPlayer, played, upgradeCard, trashed, trashCard, mineFail);
+    // ----------- TEST 1: Discard card is not neither copper, silver, or gold. --------------
+    printf("TEST 1: Next player: Discard card is not neither copper, silver, or gold.\n");
 
-	// ----------- TEST 4: trashCard = 3 = try trashing a non-treasure card; upgradeCard = 6 = get gold --------------
-	printf("TEST 4: trashCard = 3 = try trashing a non-treasure card; upgradeCard = 6 = get gold\n");
-	
-	G.hand[0][0] = gold;
-	G.hand[0][1] = mine;
-	G.hand[0][2] = tribute;
-	G.hand[0][3] = duchy;
-	G.hand[0][4] = smithy;
+    // set hand card
+    setHandCards(&G, thisPlayer, mine, estate, copper, copper, copper);
 
-	mineFail = 0;///reset boolean
-	memcpy(&testG, &G, sizeof(struct gameState));
-	mineFail = mineEffect(&testG, thisPlayer, trashCard, upgradeCard, handPos);
-	assertTrue(&testG, &G, xtraCard, thisPlayer, played, upgradeCard, trashed, trashCard, mineFail);
-	
-	// ----------- TEST 5: trashCard = 0 = gold; upgradeCard = 8 = try upgrading to non-treasure card --------------
-	printf("TEST 5: trashCard = 0 = gold; upgradeCard = 8 = try upgrading to non-treasure card\n");
-	
-	upgradeCard = 8;
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
 
-	mineFail = 0;///reset boolean
-	memcpy(&testG, &G, sizeof(struct gameState));
-	mineFail = mineEffect(&testG, thisPlayer, trashCard, upgradeCard, handPos);
-	assertTrue(&testG, &G, xtraCard, thisPlayer, played, upgradeCard, trashed, trashCard, mineFail);
+    choice1 = 1;
+    choice2 = silver;
+    returnValue = mineEffect(&testG, thisPlayer, choice1, choice2, 0);
 
-	// ----------- TEST 6: trashCard = 0 = copper; upgradeCard = 6 = get gold --------------
-	printf("TEST 6: trashCard = 0 = copper; upgradeCard = 6 = get gold\n");
-	
-	G.hand[0][0] = copper;
+    expectedReturnValue = -1;
+    printf("Return value = %d, expected = %d\n", returnValue, expectedReturnValue);
+    printAssert(returnValue == expectedReturnValue);
 
-	upgradeCard = 6;
-	mineFail = 0;///reset boolean
+    draw = 0;
+    printf("current player (player[0]): hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + draw);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + draw);
 
-	memcpy(&testG, &G, sizeof(struct gameState));
-	mineFail = mineEffect(&testG, thisPlayer, trashCard, upgradeCard, handPos);
-	assertTrue(&testG, &G, xtraCard, thisPlayer, played, upgradeCard, trashed, trashCard, mineFail);
+    discarded = 0;
+    printf("current player (player[0]): discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded);
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
 
-	return 0;
+
+    // ----------- TEST 2: Exchanged treasure is less than the lower bound of kingdom card.  --------------
+    printf("TEST 2: Exchanged treasure is less than the lower bound of kingdom card.\n");
+
+    // set hand card
+    setHandCards(&G, thisPlayer, mine, estate, copper, copper, copper);
+
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
+
+    choice1 = 1;
+    choice2 = curse - 1;
+    returnValue = mineEffect(&testG, thisPlayer, choice1, choice2, 0);
+
+    expectedReturnValue = -1;
+    printf("Return value = %d, expected = %d\n", returnValue, expectedReturnValue);
+    printAssert(returnValue == expectedReturnValue);
+
+    draw = 0;
+    printf("current player (player[0]): hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + draw);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + draw);
+
+    discarded = 0;
+    printf("current player (player[0]): discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded);
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
+
+
+    // ----------- TEST 3: Exchanged treasure is greater than the uppper bound of kingdom card.  --------------
+    printf("TEST 3: Exchanged treasure is greater than the uppper bound of kingdom card.\n");
+
+    // set hand card
+    setHandCards(&G, thisPlayer, mine, estate, copper, copper, copper);
+
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
+
+    choice1 = 1;
+    choice2 = treasure_map + 1;
+    returnValue = mineEffect(&testG, thisPlayer, choice1, choice2, 0);
+
+    expectedReturnValue = -1;
+    printf("Return value = %d, expected = %d\n", returnValue, expectedReturnValue);
+    printAssert(returnValue == expectedReturnValue);
+
+    draw = 0;
+    printf("current player (player[0]): hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + draw);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + draw);
+
+    discarded = 0;
+    printf("current player (player[0]): discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded);
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
+
+
+    // ----------- TEST 4: Exchanged treasure's cost greater than the discarded treasure's cost plus + 3. --------------
+    printf("TEST 4: Exchanged treasure's cost greater than the discarded treasure's cost plus + 3.\n");
+
+    // set hand card
+    setHandCards(&G, thisPlayer, mine, copper, copper, copper, copper);
+
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
+
+    choice1 = 1;
+    choice2 = gold;
+    returnValue = mineEffect(&testG, thisPlayer, choice1, choice2, 0);
+
+    expectedReturnValue = -1;
+    printf("Return value = %d, expected = %d\n", returnValue, expectedReturnValue);
+    printAssert(returnValue == expectedReturnValue);
+
+    draw = 0;
+    printf("current player (player[0]): hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + draw);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + draw);
+
+    discarded = 0;
+    printf("current player (player[0]): discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded);
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
+
+
+   // ----------- TEST 5: Exchanged treasure's cost is equal to the discarded treasure's cost plus + 3. --------------
+    printf("TEST 5: Exchanged treasure's cost is equal to the discarded treasure's cost plus + 3\n");
+
+    // set hand card
+    setHandCards(&G, thisPlayer, mine, silver, silver, silver, silver);
+
+    // copy the game state to a test case
+    memcpy(&testG, &G, sizeof(struct gameState));
+
+    choice1 = 1;
+    choice2 = gold;
+    returnValue = mineEffect(&testG, thisPlayer, choice1, choice2, 0);
+
+    expectedReturnValue = 0;
+    printf("Return value = %d, expected = %d\n", returnValue, expectedReturnValue);
+    printAssert(returnValue == expectedReturnValue);
+
+    draw = 1;
+    discarded = 2; //played card + discarded treasure
+    printf("current player (player[0]): hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + draw - discarded);
+    printAssert(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + draw - discarded);
+
+    printf("current player (player[0]): discard count = %d, expected = %d\n", testG.discardCount[thisPlayer], G.discardCount[thisPlayer] + discarded);
+    printAssert(testG.discardCount[thisPlayer] == G.discardCount[thisPlayer] + discarded);
+
+
+    printf("\n >>>>> Testing complete %s <<<<<\n\n", TESTCARD);
+
+
+    return 0;
 }
 
-int assertTrue(struct gameState* testG, struct gameState* G, int xtraCard, int thisPlayer, int played, int upgradeCard, int trashed, int trashCard, int mineFail) {
+void printAssert(int flag){
+    if(flag) printf("Passed\n-\n");
+    else printf("Failed\n-\n");
+}
 
-	if(mineFail == 0){
-		printf("new card in hand = %d, expected value = %d\n", testG->hand[thisPlayer][testG->handCount[thisPlayer]-1], upgradeCard);
-		printf("hand count = %d, expected value = %d\n", testG->handCount[thisPlayer], G->handCount[thisPlayer] - played - trashed + xtraCard);
-		printf("supply count = %d, expected value = %d\n", testG->supplyCount[upgradeCard], G->supplyCount[upgradeCard] - xtraCard);
-		printf("top card in played card pile = %d, expected card = %d\n", testG->playedCards[testG->playedCardCount - 1], G->hand[thisPlayer][trashCard]);
-		printf("played card count = %d, expected value = %d\n", testG->playedCardCount, G->playedCardCount + played);	
-	}else{
-		printf("mineEffect function failed\n");
-	}
+void setHandCards(struct gameState *G, int player, int card1, int card2, int card3, int card4, int card5){
+    G->hand[player][0]=card1;
+    G->hand[player][1]=card2;
+    G->hand[player][2]=card3;
+    G->hand[player][3]=card4;
+    G->hand[player][4]=card5;
+}
 
-	return 0;
+void printHand(struct gameState *G, int player){
+    int i;
+    for(i = 0 ; i < 5; i++){
+        printf("Card %d on hand = %d\n", i+1, G->hand[player][i]);
+    }
+}
+
+int getSpecificHandCount(struct gameState *G, int player, int card){
+    int count = 0;
+    int i;
+    for(i = 0 ; i < 5; i++){
+        if(G->hand[player][i] == card) count++;
+    }
+    return card;
 }
