@@ -1,0 +1,10 @@
+http://www.google.com,true
+ftp://www.google.com,true
+h3t://www.google.com,true
+3ht://www.google.com,false
+http:/www.google.com,false
+http:www.google.com,false
+http/www.google.com,false
+://www.google.com,false
+httpwww.google.com,false
+www.google.com, false
