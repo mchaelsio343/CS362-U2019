@@ -29,7 +29,7 @@ public class UrlValidatorTest extends TestCase {
    private final String testFile = "unit_test_data.txt";
    private final boolean printStatus = false;
    private final boolean printIndex = false;//print index that indicates current scheme,host,port,path, query test were using.
-   private final int RUN_TIMES = 100;
+   private final int RUN_TIMES = 1000;
    
 //   public UrlValidatorTest(String testName) {
 //      super(testName);
@@ -517,14 +517,16 @@ public class UrlValidatorTest extends TestCase {
                                new ResultPair("http:", false),
                                new ResultPair("http/", false),
                                new ResultPair("://", false),
-                               new ResultPair("http", false),		// added by Micheal
-                               new ResultPair("",false)};			// added by Micheal
+                               new ResultPair("https://",true),		// newly added
+                               new ResultPair("http", false),		// newly added
+                               new ResultPair("",false)};			// newly added
 
    ResultPair[] testUrlAuthority = {new ResultPair("www.google.com", true),
                                   new ResultPair("www.google.com.", true),
                                   new ResultPair("go.com", true),
                                   new ResultPair("go.au", true),
                                   new ResultPair("0.0.0.0", true),
+                                  new ResultPair("-1.0.0.0", false),								// newly added
                                   new ResultPair("255.255.255.255", true),
                                   new ResultPair("256.256.256.256", false),
                                   new ResultPair("255.com", true),
@@ -532,6 +534,8 @@ public class UrlValidatorTest extends TestCase {
                                   new ResultPair("1.2.3.4.", false),
                                   new ResultPair("1.2.3", false),
                                   new ResultPair(".1.2.3.4", false),
+                                  new ResultPair("1.2", false),										// newly added
+                                  new ResultPair("1.", false),										// newly added                                  
                                   new ResultPair("go.a", false),
                                   new ResultPair("go.a1a", false),
                                   new ResultPair("go.cc", true),
@@ -539,7 +543,10 @@ public class UrlValidatorTest extends TestCase {
                                   new ResultPair("aaa.", false),
                                   new ResultPair(".aaa", false),
                                   new ResultPair("aaa", false),
-                                  new ResultPair("", false)
+                                  new ResultPair("", false),
+                                  //new ResultPair("[2001:db8::8a2e:370:7334]", true),					// newly added
+                                  //new ResultPair("[2001:0db8:0000:0000:0000:8a2e:0370:7334]", true),	// newly added
+                                  //new ResultPair("[2001::db8::8a2e:370:7334]", false)					// newly added
    };
    ResultPair[] testUrlPort = {new ResultPair(":80", true),
                              new ResultPair(":65535", true), // max possible
@@ -548,8 +555,9 @@ public class UrlValidatorTest extends TestCase {
                              new ResultPair("", true),
                              new ResultPair(":-1", false),
                              new ResultPair(":65636", false),
-                             new ResultPair(":999999999999999999", false),
-                             new ResultPair(":65a", false)
+                             //new ResultPair(":999999999999999999", false),
+                             new ResultPair(":65a", false),
+                             new ResultPair(":c362", false)											// newly added
    };
    ResultPair[] testPath = {new ResultPair("/test1", true),
                           new ResultPair("/t123", true),
@@ -636,13 +644,21 @@ public class UrlValidatorTest extends TestCase {
    
    //---------------- Random test ----------------
    public void testRandom() {
-	   UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   // validator with default option
+	   UrlValidator urlVal1 = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
+	   // validator with NO_FRAGMENTS & two-slash option
+	   UrlValidator urlVal2 = new UrlValidator(null, null, UrlValidator.ALLOW_2_SLASHES + UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.NO_FRAGMENTS);
 	   
 	   Random r = new Random();
 	   boolean expected;
 	   boolean result;
+	   boolean ipv6Flag;
+	   boolean optionFlag;
 	   
 	   for (int i = 1 ; i <= RUN_TIMES ; i++) {
+		   System.out.println("run: " + i);
+		   optionFlag = false;
+		   ipv6Flag = false;
 		   expected = true;
 		   StringBuilder testBuffer = new StringBuilder();
 		   for(int testUrlPartsIndex = 0; testUrlPartsIndex < testUrlParts.length ; testUrlPartsIndex++){
@@ -652,22 +668,104 @@ public class UrlValidatorTest extends TestCase {
 			   // randomly select an member from the url part array
 			   int index = r.nextInt(singleTestUrlPart.length);	// formula: ((max - min) + 1) + min
 			   
-			   // building a complete url by chainning each part that is selected randomly 
+			   // building a complete url by chaining each part that is selected randomly 
+			   if ( testUrlPartsIndex == 3) {	// when the part is path
+				   if (r.nextInt(2) == 0) {		// determine randomly whether to include option or not 
+					   testBuffer.append(singleTestUrlPart[index].item);
+					   expected &= singleTestUrlPart[index].valid;
+				   }
+				   else {
+					   index = r.nextInt(testUrlPathOptions.length);
+					   testBuffer.append(testUrlPathOptions[index].item);
+					   expected &= testUrlPathOptions[index].valid;
+					   optionFlag = true;
+				   }
+			   }
+			   else {
+				   expected &= singleTestUrlPart[index].valid;
+				   testBuffer.append(singleTestUrlPart[index].item);	   
+			   }
 			   
-			   testBuffer.append(singleTestUrlPart[index].item);
-			   
-			   // expected value of the validation of the url
-			   expected &= singleTestUrlPart[index].valid;
-			   
-
 		   }
 		   // compare
 		   String url = testBuffer.toString();
 		   //System.out.println(url);
-		   result = urlVal.isValid(url);
+		   if (optionFlag) {
+			   //System.out.println("optionFlag");
+			   result = urlVal2.isValid(url);
+		   }
+		   else {
+			   //System.out.println("no optionFlag");
+			   result = urlVal1.isValid(url);
+		   }
+		   
 		   assertEquals(url, expected, result);
 	   }
    }
+   
+   //---------------- Generate data for Unit test ----------------
+//   public void testDataGenerator() {
+//	   String url;
+//	   boolean expected;
+//	   
+//	   // various testUrlScheme + fixed authority
+//	   for (int i = 0 ; i < testUrlScheme.length ; i++) {
+//		   expected = true;
+//		   url = testUrlScheme[i].item + "www.amazon.com";
+//		   expected &= testUrlScheme[i].valid;
+//		   System.out.println(url+","+expected);
+//	   }
+//	   
+//	   // fixed testUrlScheme + various authority
+//	   for (int i = 0 ; i < testUrlAuthority.length ; i++) {
+//		   expected = true;
+//		   url = "http://" + testUrlAuthority[i].item;
+//		   expected &= testUrlAuthority[i].valid;
+//		   System.out.println(url+","+expected);
+//	   }
+//		   
+//	   // fixed testUrlScheme + fixed authority + various port
+//	   for (int i = 0 ; i < testUrlPort.length ; i++) {
+//		   expected = true;
+//		   url = "http://" + "www.amazon.com" + testUrlPort[i].item;
+//		   expected &= testUrlPort[i].valid;
+//		   System.out.println(url+","+expected);
+//	   }
+//	   
+//	   // fixed testUrlScheme + fixed authority + fixed port + various testPath
+//	   for (int i = 0 ; i < testPath.length ; i++) {
+//		   expected = true;
+//		   url = "http://" + "www.amazon.com" + ":8080" + testPath[i].item;
+//		   expected &= testPath[i].valid;
+//		   System.out.println(url+","+expected);
+//	   }
+//	   
+//	   // fixed testUrlScheme + fixed authority + fixed port + fixed testPath + various testUrlQuery
+//	   for (int i = 0 ; i < testUrlQuery.length ; i++) {
+//		   expected = true;
+//		   url = "http://" + "www.amazon.com" + ":8080" + "/account" + testUrlQuery[i].item;
+//		   expected &= testUrlQuery[i].valid;
+//		   System.out.println(url+","+expected);
+//	   }
+//
+//	   // various testUrlScheme + various authority + various port + various testPath + various testUrlQuery
+//	   for (int i1 = 0 ; i1 < 2 ; i1++) {
+//		   for (int i2 = 0 ; i2 < 2 ; i2++) {
+//			   for (int i3 = 0 ; i3 < 2 ; i3++) {
+//				   for (int i4 = 0 ; i4 < 2 ; i4++) {
+//					   for (int i5 = 0 ; i5 < 3 ; i5++) {
+//						   expected = true;
+//						   url = testUrlScheme[i1].item + testUrlAuthority[i2].item + testUrlPort[i3].item + testPath[i4].item + testUrlQuery[i5].item;
+//						   expected = testUrlScheme[i1].valid & testUrlAuthority[i2].valid & testUrlPort[i3].valid & testPath[i4].valid & testUrlQuery[i5].valid;
+//
+//						   System.out.println(url+","+expected);
+//					   }
+//				   }
+//			   }
+//		   }
+//	   }
+//	   
+//   }
 
 }
 

@@ -6,10 +6,15 @@ Here are the bugs I introduced to the UrlValidator.java file:
 	requiring both are true.
 
 - line 419: 
-	removed Integer.parseInt, left: "int iPort = port;" in function,
-	isValidAuthority(). Not ure what the consequences of this would
-	be, because I'm not sure what kind of variable port is (if not
-	already an int [long?]) and I'm not sure how Integer.parseInt works.
+	// removed Integer.parseInt, left: "int iPort = port;" in function,
+	// isValidAuthority(). Not ure what the consequences of this would
+	// be, because I'm not sure what kind of variable port is (if not
+	// already an int [long?]) and I'm not sure how Integer.parseInt works.
+
+	instead of removing Integer.parseInt, the try-catch block is removed. 
+	As a consequence, the program will crash when UrlValidator.java
+	trying to parse an large number string that is greater than the maximum
+	integer in Java, such as 999999999999999999 . 
 
 - lines 476-478 (from original code):
 	removed entire conditional statement:

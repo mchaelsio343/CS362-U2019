@@ -413,16 +413,17 @@ public class UrlValidator implements Serializable {
                     return false;
                 }
             }
+            /* BUG 1 */
             String port = authorityMatcher.group(PARSE_AUTHORITY_PORT);
             if (port != null && port.length() > 0) {
-                try {
-                    int iPort = port;
+//               try {
+                    int iPort = Integer.parseInt(port);
                     if (iPort < 0 || iPort > MAX_UNSIGNED_16_BIT_INT) {
                         return false;
                     }
-                } catch (NumberFormatException nfe) {
-                    return false; // this can happen for big numbers
-                }
+//                } catch (NumberFormatException nfe) {
+//                    return false; // this can happen for big numbers
+//                }
             }
         }
 
@@ -460,6 +461,8 @@ public class UrlValidator implements Serializable {
         }
         
         int slash2Count = countToken("//", path);
+        
+        /* BUG 2 */
         if (isOff(ALLOW_2_SLASHES) || (slash2Count > 0)) {
             return false;
         }
@@ -473,7 +476,10 @@ public class UrlValidator implements Serializable {
      * @return true if query is valid.
      */
     protected boolean isValidQuery(String query) {
-
+    	/* BUG 3 */
+//    	if(query == null) {
+//    		return true;
+//    	}
         return QUERY_PATTERN.matcher(query).matches();
     }
 
