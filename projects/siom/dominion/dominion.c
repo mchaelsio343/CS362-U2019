@@ -774,10 +774,10 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
     case remodel:
       j = state->hand[currentPlayer][choice1];  //store card we will trash
 
-      if ( (getCost(state->hand[currentPlayer][choice1]) + 2) > getCost(choice2) )
-  {
-    return -1;
-  }
+      if ( (getCost(state->hand[currentPlayer][choice1]) + 2) <= getCost(choice2) )
+      {
+        return -1;
+      }
 
       gainCard(choice2, state, 0, currentPlayer);
 
@@ -850,9 +850,14 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
   }
       else
   {
-    //trash 2 cards in hand
-    discardCard(choice2, currentPlayer, state, 1);
-    discardCard(choice3, currentPlayer, state, 1);
+    //trash 2 cards in hand. if there is only 1 card in hand, discard 1 card. 
+    if ( state->handCount[currentPlayer] > 2){  // the count here includes the steward card
+      discardCard(choice2, currentPlayer, state, 1);
+      discardCard(choice3, currentPlayer, state, 1);
+    }
+    else{
+      discardCard(choice2, currentPlayer, state, 1);
+    }
   }
       
       //discard card from hand
@@ -987,7 +992,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 
 int discardCard(int handPos, int currentPlayer, struct gameState *state, int trashFlag)
 {
-  
+  //printf("discardCard: handPos = %d\n", handPos);
   //if card is not trashed, added to Played pile 
   if (trashFlag < 1)
     {
